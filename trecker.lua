@@ -4,7 +4,7 @@ local UserInputService = game:GetService("UserInputService")
 
 -- ПЕРЕМЕННЫЕ
 local BOT_TOKEN = "ТВОЙ_ТОКЕН_БОТА" -- Вставь свой токен
-local BOT_URL = "https://t.me/ТВОЙ_БОТ"
+local BOT_URL = "https://t.me/MerchantTraker_Bot"
 local target_id = "" 
 
 -- Таблица целей для отслеживания
