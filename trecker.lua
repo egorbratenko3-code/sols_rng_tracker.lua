@@ -61,19 +61,45 @@ IDInput.FocusLost:Connect(function(enter)
     end
 end)
 
--- ГЛАВНЫЙ ТРЕКЕР (LogService ловит всё!)
-LogService.MessageOut:Connect(function(message, messageType)
+-- ГЛАВНЫЙ ТРЕКЕР (Проверяет 3 источника)
+
+-- 1. ЛОГИ СИСТЕМЫ (Самый надежный метод для инжектора)
+-- Почти все системные алерты о торговцах дублируются в консоль (F9)
+game:GetService("LogService").MessageOut:Connect(function(message, messageType)
     local msg = message:lower()
+    if msg:find("mari has arrived") or msg:find("jester has arrived") then
+        Status.Text = "🚨 НАЙДЕН В ЛОГАХ!"
+        notify("LOG ALERT: " .. message)
+    end
+end)
+
+-- 2. НОВЫЙ ЧАТ (TextChatService)
+-- Проверяем OnIncomingMessage (срабатывает даже на скрытые сообщения)
+TextChatService.OnIncomingMessage = function(message: TextChatMessage)
+    local content = message.Text:lower()
+    if content:find("mari has arrived") or content:find("jester has arrived") then
+        Status.Text = "📢 НАЙДЕН В ЧАТЕ (NEW)!"
+        notify("CHAT ALERT: " .. message.Text)
+    end
+end
+
+-- На случай, если игра использует классический движок чата
+spawn(function()
+    local success, chatEvents = pcall(function() 
+        return game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 10) 
+    end)
     
-    -- Проверка на Mari
-    if msg:find("mari has arrived") then
-        Status.Text = "💎 НАЙДЕНА MARI!"
-        notify("💎 [MERCHANT]: Mari has arrived on the island!")
-        
-    -- Проверка на Jester
-    elseif msg:find("jester has arrived") then
-        Status.Text = "🤡 НАЙДЕН JESTER!"
-        notify("🤡 [MERCHANT]: Jester has arrived on the island!!")
+    if success and chatEvents then
+        local onMsg = chatEvents:WaitForChild("OnMessageDoneFiltering", 10)
+        if onMsg then
+            onMsg.OnClientEvent:Connect(function(data)
+                local msg = data.Message:lower()
+                if msg:find("mari has arrived") or msg:find("jester has arrived") then
+                    Status.Text = "💬 НАЙДЕН В ЧАТЕ (OLD)!"
+                    notify("LEGACY ALERT: " .. data.Message)
+                end
+            end)
+        end
     end
 end)
 
