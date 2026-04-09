@@ -1,106 +1,138 @@
 local HttpService = game:GetService("HttpService")
 local LogService = game:GetService("LogService")
 local UserInputService = game:GetService("UserInputService")
+local TextChatService = game:GetService("TextChatService")
 
--- НАСТРОЙКИ
+-- ==========================================
+-- НАСТРОЙКИ (ВСТАВЬ СВОЙ ТОКЕН)
+-- ==========================================
 local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
-local target_id = "" -- Впишешь в самом GUI
+local target_id = "" -- Установится через GUI
 
--- ГРАФИКА
-local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 250, 0, 180)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -90)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Frame.Active = true
-Frame.Draggable = true -- Включаем встроенную перетаскиваемость
+-- Список целей для отслеживания (Биомы и Торговцы)
+local alerts = {
+    ["merchant npc"] = "🏪 Торговец появился на сервере!",
+    ["dreamspace"]   = "🌌 ОБНАРУЖЕН БИОМ: DREAMSPACE!",
+    ["cyberspace"]   = "💾 ОБНАРУЖЕН БИОМ: CYBERSPACE!",
+    ["glitch"]       = "⚠️ ОБНАРУЖЕН БИОМ: GLITCH!"
+}
 
-local Title = Instance.new("TextLabel", Frame)
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Text = "Merchant Tracker v2.0"
-Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-Title.TextColor3 = Color3.new(1, 1, 1)
+-- ==========================================
+-- СОЗДАНИЕ ИНТЕРФЕЙСА (GUI)
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UniversalTracker"
+ScreenGui.Parent = game:GetService("CoreGui")
 
-local IDInput = Instance.new("TextBox", Frame)
-IDInput.Size = UDim2.new(0.9, 0, 0, 30)
-IDInput.Position = UDim2.new(0.05, 0, 0.25, 0)
-IDInput.PlaceholderText = "Введи Chat ID и жми Enter"
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -90)
+MainFrame.Size = UDim2.new(0, 250, 0, 180)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true -- Можно двигать мышкой за всё окно
+
+-- Скругление углов
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+Title.Text = "Merchant & Biome Tracker"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 16
+
+local IDInput = Instance.new("TextBox")
+IDInput.Parent = MainFrame
+IDInput.Position = UDim2.new(0.05, 0, 0.3, 0)
+IDInput.Size = UDim2.new(0.9, 0, 0, 35)
+IDInput.PlaceholderText = "Введи Chat ID и нажми Enter"
 IDInput.Text = ""
+IDInput.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+IDInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+IDInput.ClearTextOnFocus = false
 
-local Status = Instance.new("TextLabel", Frame)
-Status.Size = UDim2.new(0.9, 0, 0, 60)
-Status.Position = UDim2.new(0.05, 0, 0.55, 0)
+local Status = Instance.new("TextLabel")
+Status.Parent = MainFrame
+Status.Position = UDim2.new(0.05, 0, 0.6, 0)
+Status.Size = UDim2.new(0.9, 0, 0, 50)
 Status.Text = "Ожидание ввода ID..."
-Status.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+Status.TextColor3 = Color3.fromRGB(180, 180, 180)
+Status.BackgroundTransparency = 1
 Status.TextWrapped = true
+Status.Font = Enum.Font.SourceSans
+Status.TextSize = 14
 
--- ФУНКЦИЯ ОТПРАВКИ
+-- ==========================================
+-- ФУНКЦИИ
+-- ==========================================
+
 local function notify(msg)
     if target_id == "" then return end
     
-    local url = "https://api.telegram.org/bot" .. BOT_TOKEN .. "/sendMessage"
-    local data = {chat_id = target_id, text = msg}
+    -- Кодируем сообщение для URL
+    local encodedMsg = HttpService:UrlEncode(msg)
+    local url = "https://api.telegram.org/bot" .. BOT_TOKEN .. "/sendMessage?chat_id=" .. target_id .. "&text=" .. encodedMsg
     
     local req = (syn and syn.request) or request or http_request
     if req then
         req({
             Url = url,
-            Method = "POST",
-            Headers = {["Content-Type"] = "application/json"},
-            Body = HttpService:JSONEncode(data)
+            Method = "GET"
         })
+    else
+        -- Запасной метод, если инжектор старый
+        pcall(function()
+            HttpService:GetAsync(url)
+        end)
     end
 end
 
--- ОБРАБОТКА ВВОДА ID
-IDInput.FocusLost:Connect(function(enter)
-    if enter then
+-- Обработка ввода ID
+IDInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed and IDInput.Text ~= "" then
         target_id = IDInput.Text
         Status.Text = "✅ Подключено! ID: " .. target_id
-        notify("📡 CONNECTED: Скрипт запущен в игре!")
+        Status.TextColor3 = Color3.fromRGB(100, 255, 100)
+        
+        -- Сразу отправляем тестовое уведомление
+        notify("📡 CONNECTED: Скрипт в Roblox запущен и слушает логи!")
     end
 end)
 
--- ГЛАВНЫЙ ТРЕКЕР (Проверяет 3 источника)
-
--- 1. ЛОГИ СИСТЕМЫ (Самый надежный метод для инжектора)
--- Почти все системные алерты о торговцах дублируются в консоль (F9)
-game:GetService("LogService").MessageOut:Connect(function(message, messageType)
+-- ГЛАВНЫЙ ТРЕКЕР (Слушает LogService)
+LogService.MessageOut:Connect(function(message, messageType)
     local msg = message:lower()
-    if msg:find("mari has arrived") or msg:find("jester has arrived") then
-        Status.Text = "🚨 НАЙДЕН В ЛОГАХ!"
-        notify("LOG ALERT: " .. message)
-    end
-end)
-
--- 2. НОВЫЙ ЧАТ (TextChatService)
--- Проверяем OnIncomingMessage (срабатывает даже на скрытые сообщения)
-TextChatService.OnIncomingMessage = function(message: TextChatMessage)
-    local content = message.Text:lower()
-    if content:find("mari has arrived") or content:find("jester has arrived") then
-        Status.Text = "📢 НАЙДЕН В ЧАТЕ (NEW)!"
-        notify("CHAT ALERT: " .. message.Text)
-    end
-end
-
--- На случай, если игра использует классический движок чата
-spawn(function()
-    local success, chatEvents = pcall(function() 
-        return game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 10) 
-    end)
     
-    if success and chatEvents then
-        local onMsg = chatEvents:WaitForChild("OnMessageDoneFiltering", 10)
-        if onMsg then
-            onMsg.OnClientEvent:Connect(function(data)
-                local msg = data.Message:lower()
-                if msg:find("mari has arrived") or msg:find("jester has arrived") then
-                    Status.Text = "💬 НАЙДЕН В ЧАТЕ (OLD)!"
-                    notify("LEGACY ALERT: " .. data.Message)
-                end
-            end)
+    for keyword, notification in pairs(alerts) do
+        if msg:find(keyword:lower()) then
+            Status.Text = "✨ НАЙДЕНО: " .. keyword:upper()
+            Status.TextColor3 = Color3.fromRGB(255, 215, 0)
+            
+            -- Отправка в ТГ
+            notify("🚨 " .. notification .. "\n\n📝 Полный лог: " .. message)
+            
+            task.wait(2) -- Защита от спама (если лог дублируется)
+            break
         end
     end
 end)
 
-Status.Text = "Скрипт готов. Введи ID."
+-- Дополнительный трекер через чат (на всякий случай)
+TextChatService.OnIncomingMessage = function(message: TextChatMessage)
+    local msg = message.Text:lower()
+    for keyword, notification in pairs(alerts) do
+        if msg:find(keyword:lower()) then
+            notify("💬 ЧАТ АЛЕРТ: " .. notification .. "\n📝 Сообщение: " .. message.Text)
+            break
+        end
+    end
+end
+
+print("Tracker Script Loaded!")
