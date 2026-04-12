@@ -23,7 +23,7 @@ local last_notified_msg = "" -- Анти-спам
 -- ИНТЕРФЕЙС (ДИЗАЙН СОХРАНЕН)
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "UniversalTracker"
+ScreenGui.Name = "тг бот: @MerchantTraker_Bot"
 ScreenGui.Parent = game:GetService("CoreGui")
 
 local MainFrame = Instance.new("Frame")
