@@ -63,7 +63,7 @@ end
 -- ИНТЕРФЕЙС
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Sols RNG Tracker V1.6"
+ScreenGui.Name = "Sol's RNG Tracker_V1.6"
 ScreenGui.Parent = game:GetService("CoreGui")
 
 local Main = Instance.new("Frame")
@@ -80,7 +80,7 @@ local Title = Instance.new("TextLabel")
 Title.Parent = Main
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
-Title.Text = "Sols RNG Tracker"
+Title.Text = "SOL'S RNG TRACKER V1.6"
 Title.TextColor3 = Color3.new(1, 1, 1)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
@@ -98,7 +98,7 @@ local Layout = Instance.new("UIListLayout", Scroll)
 Layout.Padding = UDim.new(0, 5)
 
 -- ЭЛЕМЕНТЫ
-local IDInput = Instance.new("введи свой CHAT ID")
+local IDInput = Instance.new("TextBox")
 IDInput.Parent = Scroll
 IDInput.Size = UDim2.new(1, 0, 0, 35)
 IDInput.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
