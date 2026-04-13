@@ -1,9 +1,6 @@
 local HttpService = game:GetService("HttpService")
 local TextChatService = game:GetService("TextChatService")
 
--- ==========================================
--- КОНФИГУРАЦИЯ
--- ==========================================
 local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
 local target_id = ""
 
@@ -12,9 +9,6 @@ local merchants = {"Jester", "Rin", "Mari"}
 local active = {}
 local ui_elements = {Accords = {}, Buttons = {}, Texts = {}}
 
--- ==========================================
--- ИНТЕРФЕЙС
--- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "Sol's RNG Tracker V2"
 ScreenGui.Parent = game:GetService("CoreGui")
@@ -49,9 +43,6 @@ Scroll.ScrollBarThickness = 2
 local Layout = Instance.new("UIListLayout", Scroll)
 Layout.Padding = UDim.new(0, 6)
 
--- ==========================================
--- СИСТЕМА ТЕМ (ИСПРАВЛЕННАЯ)
--- ==========================================
 local currentTheme = {bg = Color3.fromRGB(25, 25, 25), accent = Color3.fromRGB(40, 40, 40), text = Color3.new(1,1,1)}
 local isRGB = false
 
@@ -69,9 +60,6 @@ local function ApplyTheme(bg, accent, text)
 	end
 end
 
--- ==========================================
--- СОЗДАНИЕ ЭЛЕМЕНТОВ
--- ==========================================
 local function CreateAccordion(title)
 	local AccordionFrame = Instance.new("Frame")
 	AccordionFrame.Size = UDim2.new(1, 0, 0, 35)
@@ -108,7 +96,6 @@ local function CreateAccordion(title)
 	return Content
 end
 
--- Секции
 local IDInput = Instance.new("TextBox")
 IDInput.Parent = Scroll
 IDInput.Size = UDim2.new(1, 0, 0, 35)
@@ -123,7 +110,6 @@ local ThemeSec = CreateAccordion("THEMES")
 local MerchSec = CreateAccordion("MERCHANTS")
 local BiomeSec = CreateAccordion("BIOMES")
 
--- Добавление Тем
 local function ThemeBtn(name, bg, acc, txt)
 	local b = Instance.new("TextButton")
 	b.Size = UDim2.new(1, 0, 0, 30)
@@ -157,7 +143,6 @@ task.spawn(function()
 	end
 end)
 
--- Переключатели
 local function AddToggle(name, parent)
 	active[name] = true
 	local b = Instance.new("TextButton")
@@ -180,9 +165,6 @@ end
 for _, m in pairs(merchants) do AddToggle(m, MerchSec) end
 for _, b in pairs(biomes) do AddToggle(b, BiomeSec) end
 
--- ==========================================
--- ЛОГИКА
--- ==========================================
 IDInput.FocusLost:Connect(function(ep) if ep then target_id = IDInput.Text end end)
 
 TextChatService.OnIncomingMessage = function(message: TextChatMessage)
