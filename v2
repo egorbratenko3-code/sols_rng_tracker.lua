@@ -1,5 +1,4 @@
 local HttpService = game:GetService("HttpService")
-local LogService = game:GetService("LogService")
 local TextChatService = game:GetService("TextChatService")
 
 -- ==========================================
@@ -7,215 +6,192 @@ local TextChatService = game:GetService("TextChatService")
 -- ==========================================
 local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
 local target_id = ""
-local bot_link = "https://t.me/MerchantTraker_Bot" 
 
-local settings = {
-    biomes = {WINDY=true, SNOWY=true, RAINY=true, SANDSTORM=true, HELL=true, STARFALL=true, HEAVEN=true, CORRUPTION=true, NULL=true, GLITCH=true, DREAMSPACE=true, CYBERSPACE=true},
-    merchants = {Jester=true, Rin=true, Mari=true},
-    theme = "Dark"
-}
+local biomes = {"WINDY", "SNOWY", "RAINY", "SANDSTORM", "HELL", "STARFALL", "HEAVEN", "CORRUPTION", "NULL", "GLITCH", "DREAMSPACE", "CYBERSPACE"}
+local merchants = {"Jester", "Rin", "Mari"}
+local active = {}
+local ui_elements = {Accords = {}, Buttons = {}, Texts = {}}
 
 -- ==========================================
--- ОСНОВНОЙ UI
+-- ИНТЕРФЕЙС
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "EliteTracker_V4"
+ScreenGui.Name = "Sol's RNG Tracker V2"
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local Main = Instance.new("Frame")
-Main.Name = "Main"
 Main.Parent = ScreenGui
-Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-Main.Position = UDim2.new(0.5, -225, 0.5, -150)
-Main.Size = UDim2.new(0, 450, 0, 300)
+Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Main.Position = UDim2.new(0.5, -175, 0.5, -150)
+Main.Size = UDim2.new(0, 350, 0, 320)
 Main.Active = true
 Main.Draggable = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
 
--- Боковое меню
-local Sidebar = Instance.new("Frame")
-Sidebar.Name = "Sidebar"
-Sidebar.Parent = Main
-Sidebar.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
-Sidebar.Size = UDim2.new(0, 130, 1, 0)
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
+local Title = Instance.new("TextLabel")
+Title.Parent = Main
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Text = "ELITE TRACKER"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
 
--- ЛОГОТИП
-local Logo = Instance.new("ImageLabel")
-Logo.Name = "Logo"
-Logo.Parent = Sidebar
-Logo.BackgroundTransparency = 1
-Logo.Position = UDim2.new(0, 15, 0, 10)
-Logo.Size = UDim2.new(0, 100, 0, 100)
-Logo.Image = "rbxassetid://107735786630825" -- Твоё лого
+local Scroll = Instance.new("ScrollingFrame")
+Scroll.Parent = Main
+Scroll.Position = UDim2.new(0, 10, 0, 45)
+Scroll.Size = UDim2.new(1, -20, 1, -55)
+Scroll.BackgroundTransparency = 1
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 0) 
+Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scroll.ScrollBarThickness = 2
 
--- Контейнер для кнопок меню
-local TabButtons = Instance.new("Frame")
-TabButtons.Parent = Sidebar
-TabButtons.Position = UDim2.new(0, 0, 0, 120)
-TabButtons.Size = UDim2.new(1, 0, 1, -120)
-TabButtons.BackgroundTransparency = 1
+local Layout = Instance.new("UIListLayout", Scroll)
+Layout.Padding = UDim.new(0, 6)
 
-local layout = Instance.new("UIListLayout", TabButtons)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Padding = UDim.new(0, 5)
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+-- ==========================================
+-- СИСТЕМА ТЕМ (ИСПРАВЛЕННАЯ)
+-- ==========================================
+local currentTheme = {bg = Color3.fromRGB(25, 25, 25), accent = Color3.fromRGB(40, 40, 40), text = Color3.new(1,1,1)}
+local isRGB = false
 
--- Контейнер страниц
-local Container = Instance.new("Frame")
-Container.Name = "Container"
-Container.Parent = Main
-Container.Position = UDim2.new(0, 140, 0, 10)
-Container.Size = UDim2.new(1, -150, 1, -20)
-Container.BackgroundTransparency = 1
-
-local Pages = {}
-
-local function CreatePage(name)
-    local p = Instance.new("ScrollingFrame")
-    p.Name = name
-    p.Parent = Container
-    p.Size = UDim2.new(1, 0, 1, 0)
-    p.BackgroundTransparency = 1
-    p.Visible = false
-    p.CanvasSize = UDim2.new(0, 0, 0, 0) -- Авто-размер ниже
-    p.ScrollBarThickness = 2
-    p.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    
-    local list = Instance.new("UIListLayout", p)
-    list.Padding = UDim.new(0, 5)
-    list.SortOrder = Enum.SortOrder.LayoutOrder
-    
-    Pages[name] = p
-    return p
+local function ApplyTheme(bg, accent, text)
+	isRGB = false
+	Main.BackgroundColor3 = bg
+	Title.TextColor3 = text
+	for _, frame in pairs(ui_elements.Accords) do
+		frame.BackgroundColor3 = accent
+		frame:FindFirstChild("Header").TextColor3 = text
+	end
+	for _, btn in pairs(ui_elements.Buttons) do
+		if not btn:GetAttribute("IsToggle") then btn.BackgroundColor3 = bg end
+		btn.TextColor3 = text
+	end
 end
 
-local Home = CreatePage("Home")
-local BiomesPage = CreatePage("Biomes")
-local MerchantsPage = CreatePage("Merchants")
-local SettingsPage = CreatePage("Settings")
-
 -- ==========================================
--- ЛОГИКА ВКЛАДОК
+-- СОЗДАНИЕ ЭЛЕМЕНТОВ
 -- ==========================================
-local function AddTab(name)
-    local btn = Instance.new("TextButton")
-    btn.Name = name .. "Tab"
-    btn.Parent = TabButtons
-    btn.Size = UDim2.new(0.9, 0, 0, 30)
-    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
-    btn.Text = name
-    btn.TextColor3 = Color3.white
-    btn.Font = Enum.Font.SourceSansBold
-    btn.TextSize = 14
-    Instance.new("UICorner", btn)
+local function CreateAccordion(title)
+	local AccordionFrame = Instance.new("Frame")
+	AccordionFrame.Size = UDim2.new(1, 0, 0, 35)
+	AccordionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+	AccordionFrame.ClipsDescendants = true
+	AccordionFrame.Parent = Scroll
+	Instance.new("UICorner", AccordionFrame)
+	table.insert(ui_elements.Accords, AccordionFrame)
 
-    btn.MouseButton1Click:Connect(function()
-        for _, p in pairs(Pages) do p.Visible = false end
-        Pages[name].Visible = true
-    end)
+	local Header = Instance.new("TextButton")
+	Header.Name = "Header"
+	Header.Size = UDim2.new(1, 0, 0, 35)
+	Header.BackgroundTransparency = 1
+	Header.Text = "  +  " .. title
+	Header.TextColor3 = Color3.new(1, 1, 1)
+	Header.Font = Enum.Font.GothamSemibold
+	Header.TextSize = 14
+	Header.TextXAlignment = Enum.TextXAlignment.Left
+	Header.Parent = AccordionFrame
+
+	local Content = Instance.new("Frame")
+	Content.Position = UDim2.new(0, 5, 0, 40)
+	Content.Size = UDim2.new(1, -10, 0, 0)
+	Content.AutomaticSize = Enum.AutomaticSize.Y
+	Content.BackgroundTransparency = 1
+	Content.Parent = AccordionFrame
+	Instance.new("UIListLayout", Content).Padding = UDim.new(0, 4)
+
+	Header.MouseButton1Click:Connect(function()
+		local open = AccordionFrame.Size.Y.Offset == 35
+		AccordionFrame.Size = open and UDim2.new(1, 0, 0, Content.AbsoluteSize.Y + 45) or UDim2.new(1, 0, 0, 35)
+		Header.Text = (open and "  -  " or "  +  ") .. title
+	end)
+	return Content
 end
 
-AddTab("Home")
-AddTab("Biomes")
-AddTab("Merchants")
-AddTab("Settings")
-
--- ==========================================
--- КОНТЕНТ ВКЛАДКИ HOME
--- ==========================================
+-- Секции
 local IDInput = Instance.new("TextBox")
-IDInput.Parent = Home
-IDInput.Size = UDim2.new(1, 0, 0, 40)
-IDInput.PlaceholderText = "Введите Chat ID и Enter"
-IDInput.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
-IDInput.TextColor3 = Color3.white
-IDInput.Font = Enum.Font.SourceSans
-IDInput.Text = ""
+IDInput.Parent = Scroll
+IDInput.Size = UDim2.new(1, 0, 0, 35)
+IDInput.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+IDInput.TextColor3 = Color3.new(1, 1, 1)
+IDInput.PlaceholderText = "CHAT ID"
+IDInput.Font = Enum.Font.Gotham
+IDInput.TextSize = 14
 Instance.new("UICorner", IDInput)
 
-local CopyBtn = Instance.new("TextButton")
-CopyBtn.Parent = Home
-CopyBtn.Size = UDim2.new(1, 0, 0, 30)
-CopyBtn.Text = "Скопировать ссылку на бота"
-CopyBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
-CopyBtn.TextColor3 = Color3.white
-Instance.new("UICorner", CopyBtn)
+local ThemeSec = CreateAccordion("THEMES")
+local MerchSec = CreateAccordion("MERCHANTS")
+local BiomeSec = CreateAccordion("BIOMES")
 
-local LogBox = Instance.new("TextLabel")
-LogBox.Parent = Home
-LogBox.Size = UDim2.new(1, 0, 0, 150)
-LogBox.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
-LogBox.TextColor3 = Color3.fromRGB(0, 255, 120)
-LogBox.Text = "--- LOGS START ---\nWaiting for ID..."
-LogBox.TextWrapped = true
-LogBox.TextYAlignment = Enum.TextYAlignment.Top
-LogBox.TextXAlignment = Enum.TextXAlignment.Left
-LogBox.Font = Enum.Font.Code
-LogBox.TextSize = 12
+-- Добавление Тем
+local function ThemeBtn(name, bg, acc, txt)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1, 0, 0, 30)
+	b.BackgroundColor3 = bg
+	b.Text = name
+	b.TextColor3 = txt
+	b.Font = Enum.Font.Gotham
+	b.TextSize = 13
+	b.Parent = ThemeSec
+	Instance.new("UICorner", b)
+	b.MouseButton1Click:Connect(function() ApplyTheme(bg, acc, txt) end)
+	table.insert(ui_elements.Buttons, b)
+end
+
+ThemeBtn("Dark Minimal", Color3.fromRGB(20,20,20), Color3.fromRGB(35,35,35), Color3.new(1,1,1))
+ThemeBtn("Light Paper", Color3.fromRGB(245,245,245), Color3.fromRGB(220,220,220), Color3.fromRGB(40,40,40))
+ThemeBtn("Sky Blue", Color3.fromRGB(30,50,80), Color3.fromRGB(40,70,110), Color3.new(1,1,1))
+
+local RGBBtn = Instance.new("TextButton")
+RGBBtn.Size = UDim2.new(1, 0, 0, 30); RGBBtn.Text = "RGB MODE"; RGBBtn.Parent = ThemeSec; RGBBtn.Font = Enum.Font.Gotham; RGBBtn.TextSize = 13
+Instance.new("UICorner", RGBBtn)
+RGBBtn.MouseButton1Click:Connect(function() isRGB = not isRGB end)
+
+task.spawn(function()
+	while task.wait() do
+		if isRGB then
+			local c = Color3.fromHSV(tick()%5/5, 0.6, 0.8)
+			Main.BackgroundColor3 = c
+			for _, v in pairs(ui_elements.Accords) do v.BackgroundColor3 = c:Lerp(Color3.new(0,0,0), 0.2) end
+		end
+	end
+end)
+
+-- Переключатели
+local function AddToggle(name, parent)
+	active[name] = true
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1, 0, 0, 35)
+	b.BackgroundColor3 = Color3.fromRGB(45, 120, 45)
+	b.Text = name .. " [ON]"
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.GothamSemibold
+	b.TextSize = 13
+	b:SetAttribute("IsToggle", true)
+	b.Parent = parent
+	Instance.new("UICorner", b)
+	b.MouseButton1Click:Connect(function()
+		active[name] = not active[name]
+		b.BackgroundColor3 = active[name] and Color3.fromRGB(45, 120, 45) or Color3.fromRGB(120, 45, 45)
+		b.Text = name .. (active[name] and " [ON]" or " [OFF]")
+	end)
+end
+
+for _, m in pairs(merchants) do AddToggle(m, MerchSec) end
+for _, b in pairs(biomes) do AddToggle(b, BiomeSec) end
 
 -- ==========================================
--- ФУНКЦИИ И ТРЕКЕРЫ
+-- ЛОГИКА
 -- ==========================================
-local function notify(msg)
-    if target_id == "" then return end
-    LogBox.Text = os.date("[%X] ") .. msg .. "\n" .. LogBox.Text
-    local url = "https://api.telegram.org/bot"..BOT_TOKEN.."/sendMessage?chat_id="..target_id.."&text="..HttpService:UrlEncode(msg)
-    pcall(function()
-        local req = (syn and syn.request) or request or http_request
-        if req then req({Url = url, Method = "GET"}) else HttpService:GetAsync(url) end
-    end)
+IDInput.FocusLost:Connect(function(ep) if ep then target_id = IDInput.Text end end)
+
+TextChatService.OnIncomingMessage = function(message: TextChatMessage)
+	local raw = message.Text
+	for name, state in pairs(active) do
+		if state and raw:lower():find(name:lower()) then
+			local url = "https://api.telegram.org/bot"..BOT_TOKEN.."/sendMessage?chat_id="..target_id.."&text="..HttpService:UrlEncode("Target: "..name.."\n"..raw)
+			pcall(function() (syn and syn.request or request or http_request)({Url = url, Method = "GET"}) end)
+			break
+		end
+	end
 end
-
-IDInput.FocusLost:Connect(function(ep)
-    if ep then 
-        target_id = IDInput.Text 
-        notify("✅ Система готова к работе!")
-    end
-end)
-
-CopyBtn.MouseButton1Click:Connect(function()
-    if setclipboard then setclipboard(bot_link) CopyBtn.Text = "СКОПИРОВАНО!" task.wait(2) CopyBtn.Text = "Скопировать ссылку на бота" end
-end)
-
--- Переключатели (Чекбоксы)
-local function CreateToggle(parent, name, tableKey, subKey)
-    local t = Instance.new("TextButton")
-    t.Parent = parent
-    t.Size = UDim2.new(1, 0, 0, 30)
-    t.BackgroundColor3 = settings[tableKey][subKey] and Color3.fromRGB(50, 120, 50) or Color3.fromRGB(120, 50, 50)
-    t.Text = name .. (settings[tableKey][subKey] and " [ВКЛ]" or " [ВЫКЛ]")
-    t.TextColor3 = Color3.white
-    Instance.new("UICorner", t)
-
-    t.MouseButton1Click:Connect(function()
-        settings[tableKey][subKey] = not settings[tableKey][subKey]
-        t.BackgroundColor3 = settings[tableKey][subKey] and Color3.fromRGB(50, 120, 50) or Color3.fromRGB(120, 50, 50)
-        t.Text = name .. (settings[tableKey][subKey] and " [ВКЛ]" or " [ВЫКЛ]")
-    end)
-end
-
-for b, _ in pairs(settings.biomes) do CreateToggle(BiomesPage, b, "biomes", b) end
-for m, _ in pairs(settings.merchants) do CreateToggle(MerchantsPage, m, "merchants", m) end
-
--- СКАНЕРЫ
-LogService.MessageOut:Connect(function(m, t)
-    local msg = m:lower()
-    for name, enabled in pairs(settings.biomes) do
-        if enabled and msg:find(name:lower()) then notify("🌍 БИОМ: " .. name) break end
-    end
-    for name, enabled in pairs(settings.merchants) do
-        if enabled and msg:find(name:lower() .. " has arrived") then notify("🏪 МЕРЧАНТ: " .. name) break end
-    end
-end)
-
-TextChatService.OnIncomingMessage = function(m: TextChatMessage)
-    local msg = m.Text:lower()
-    for name, enabled in pairs(settings.merchants) do
-        if enabled and msg:find(name:lower() .. " has arrived") then notify("💬 [ЧАТ] МЕРЧАНТ: " .. name) break end
-    end
-end
-
-Home.Visible = true
-print("Elite Tracker V4: Final UI Fix Loaded")
