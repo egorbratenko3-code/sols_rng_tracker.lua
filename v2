@@ -1,204 +1,209 @@
 local HttpService = game:GetService("HttpService")
 local LogService = game:GetService("LogService")
 local TextChatService = game:GetService("TextChatService")
-local TweenService = game:GetService("TweenService")
 
 -- ==========================================
--- КОНФИГУРАЦИЯ
+-- НАСТРОЙКИ
 -- ==========================================
 local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
 local target_id = ""
-local bot_link = "https://t.me/MerchantTraker_Bot" -- ЗАМЕНИ НА СВОЕГО БОТА
+local bot_link = "https://t.me/MerchantTraker_Bot" 
 
--- Настройки фильтров (по умолчанию включено всё)
 local settings = {
-    biomes = {
-        WINDY = true, SNOWY = true, RAINY = true, SANDSTORM = true, 
-        HELL = true, STARFALL = true, HEAVEN = true, CORRUPTION = true, 
-        NULL = true, GLITCH = true, DREAMSPACE = true, CYBERSPACE = true
-    },
-    merchants = {
-        Jester = true, Rin = true, Mari = true
-    },
-    theme = "Dark" -- Dark, Light, RGB
+    biomes = {WINDY=true, SNOWY=true, RAINY=true, SANDSTORM=true, HELL=true, STARFALL=true, HEAVEN=true, CORRUPTION=true, NULL=true, GLITCH=true, DREAMSPACE=true, CYBERSPACE=true},
+    merchants = {Jester=true, Rin=true, Mari=true}
 }
 
 -- ==========================================
--- СОЗДАНИЕ UI
+-- ГЛАВНЫЙ ИНТЕРФЕЙС
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Sols RNG Tracker"
+ScreenGui.Name = "EliteTrackerV3"
 ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.IgnoreGuiInset = true
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 400, 0, 300)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Parent = ScreenGui
+Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+Main.Position = UDim2.new(0.5, -200, 0.5, -150)
+Main.Size = UDim2.new(0, 450, 0, 320)
+Main.Active = true
+Main.Draggable = true
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
-UICorner.Parent = MainFrame
+UICorner.Parent = Main
 
--- Боковая панель (Sidebar)
+-- Левая панель
 local Sidebar = Instance.new("Frame")
 Sidebar.Name = "Sidebar"
-Sidebar.Parent = MainFrame
+Sidebar.Parent = Main
 Sidebar.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-Sidebar.Size = UDim2.new(0, 100, 1, 0)
-Sidebar.BorderSizePixel = 0
+Sidebar.Size = UDim2.new(0, 120, 1, 0)
 
-local SidebarCorner = Instance.new("UICorner")
-SidebarCorner.CornerRadius = UDim.new(0, 8)
-SidebarCorner.Parent = Sidebar
-
--- Логотип
 local Logo = Instance.new("ImageLabel")
-Logo.Name = "Logo"
 Logo.Parent = Sidebar
+Logo.Size = UDim2.new(0, 80, 0, 80)
+Logo.Position = UDim2.new(0.5, -40, 0, 10)
 Logo.BackgroundTransparency = 1
-Logo.Position = UDim2.new(0.1, 0, 0.05, 0)
-Logo.Size = UDim2.new(0.8, 0, 0, 80)
-Logo.Image = "rbxassetid://107735786630825" -- ID загруженного лого (нужно загрузить в Roblox)
-Logo.ScaleType = Enum.ScaleType.Fit
+Logo.Image = "rbxassetid://107735786630825" -- Убедись, что ID верный
 
--- Контейнер для вкладок
-local Pages = Instance.new("Frame")
-Pages.Name = "Pages"
-Pages.Parent = MainFrame
-Pages.Position = UDim2.new(0.25, 5, 0.1, 0)
-Pages.Size = UDim2.new(0.75, -10, 0.9, -5)
-Pages.BackgroundTransparency = 1
+-- Контейнер для страниц
+local Container = Instance.new("Frame")
+Container.Name = "Container"
+Container.Parent = Main
+Container.Position = UDim2.new(0, 130, 0, 10)
+Container.Size = UDim2.new(1, -140, 1, -20)
+Container.BackgroundTransparency = 1
 
-local function createPage(name)
-    local frame = Instance.new("ScrollingFrame")
-    frame.Name = name
-    frame.Parent = Pages
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundTransparency = 1
-    frame.Visible = false
-    frame.ScrollBarThickness = 2
-    return frame
+local Pages = {}
+
+local function CreatePage(name)
+    local p = Instance.new("ScrollingFrame")
+    p.Name = name
+    p.Parent = Container
+    p.Size = UDim2.new(1, 0, 1, 0)
+    p.BackgroundTransparency = 1
+    p.Visible = false
+    p.CanvasSize = UDim2.new(0, 0, 2, 0)
+    p.ScrollBarThickness = 3
+    Pages[name] = p
+    return p
 end
 
-local Home = createPage("Home")
-local BiomesPage = createPage("Biomes")
-local MerchantsPage = createPage("Merchants")
-local SettingsPage = createPage("Settings")
-
-Home.Visible = true -- Начальная страница
+local Home = CreatePage("Home")
+local Biomes = CreatePage("Biomes")
+local Merchants = CreatePage("Merchants")
+local Settings = CreatePage("Settings")
 
 -- ==========================================
--- НАПОЛНЕНИЕ ВКЛАДОК (Пример для Home)
+-- СОЗДАНИЕ КНОПОК ВКЛАДОК
 -- ==========================================
-local function addInput(parent, placeholder, yPos)
-    local input = Instance.new("TextBox")
-    input.Parent = parent
-    input.Size = UDim2.new(0.9, 0, 0, 30)
-    input.Position = UDim2.new(0.05, 0, 0, yPos)
-    input.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-    input.TextColor3 = Color3.fromRGB(255, 255, 255)
-    input.PlaceholderText = placeholder
-    input.Text = ""
-    local c = Instance.new("UICorner") c.CornerRadius = UDim.new(0, 5) c.Parent = input
-    return input
-end
-
-local idBox = addInput(Home, "Введите Chat ID", 10)
-local copyBtn = Instance.new("TextButton")
-copyBtn.Parent = Home
-copyBtn.Size = UDim2.new(0.9, 0, 0, 30)
-copyBtn.Position = UDim2.new(0.05, 0, 0, 50)
-copyBtn.Text = "Копировать ссылку на бота"
-copyBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
-copyBtn.TextColor3 = Color3.white
-
-copyBtn.MouseButton1Click:Connect(function()
-    setclipboard(bot_link)
-    copyBtn.Text = "Скопировано!"
-    task.wait(2)
-    copyBtn.Text = "Копировать ссылку на бота"
-end)
-
--- Логи (Console) на вкладке Home
-local logLabel = Instance.new("TextLabel")
-logLabel.Parent = Home
-logLabel.Position = UDim2.new(0.05, 0, 0, 90)
-logLabel.Size = UDim2.new(0.9, 0, 0, 150)
-logLabel.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-logLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-logLabel.Text = "System ready...\nWaiting for connection..."
-logLabel.TextXAlignment = Enum.TextXAlignment.Left
-logLabel.TextYAlignment = Enum.TextYAlignment.Top
-logLabel.TextSize = 12
-
-local function updateLogs(txt)
-    logLabel.Text = string.sub(txt .. "\n" .. logLabel.Text, 1, 500)
-end
-
--- ==========================================
--- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК
--- ==========================================
-local function setupTab(name, page, y)
+local function AddTab(name, y)
     local btn = Instance.new("TextButton")
     btn.Parent = Sidebar
-    btn.Size = UDim2.new(0.9, 0, 0, 30)
+    btn.Size = UDim2.new(0.9, 0, 0, 35)
     btn.Position = UDim2.new(0.05, 0, 0, y)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
     btn.Text = name
-    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
     btn.TextColor3 = Color3.white
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 16
+    
     local c = Instance.new("UICorner") c.Parent = btn
     
     btn.MouseButton1Click:Connect(function()
-        for _, p in pairs(Pages:GetChildren()) do p.Visible = false end
-        page.Visible = true
+        for _, p in pairs(Pages) do p.Visible = false end
+        Pages[name].Visible = true
     end)
 end
 
-setupTab("Home", Home, 100)
-setupTab("Biomes", BiomesPage, 135)
-setupTab("Merchants", MerchantsPage, 170)
-setupTab("Settings", SettingsPage, 205)
+AddTab("Home", 100)
+AddTab("Biomes", 140)
+AddTab("Merchants", 180)
+AddTab("Settings", 220)
 
 -- ==========================================
--- ФУНКЦИЯ УВЕДОМЛЕНИЯ
+-- НАПОЛНЕНИЕ HOME (ID и Логи)
 -- ==========================================
-local lastMsg = ""
+local IDInput = Instance.new("TextBox")
+IDInput.Parent = Home
+IDInput.Size = UDim2.new(0.95, 0, 0, 40)
+IDInput.PlaceholderText = "Введи Chat ID и жми ENTER"
+IDInput.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+IDInput.TextColor3 = Color3.white
+IDInput.TextSize = 18
+
+local CopyLink = Instance.new("TextButton")
+CopyLink.Parent = Home
+CopyLink.Position = UDim2.new(0, 0, 0, 50)
+CopyLink.Size = UDim2.new(0.95, 0, 0, 30)
+CopyLink.Text = "Скопировать ссылку на бота"
+CopyLink.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+CopyLink.TextColor3 = Color3.white
+
+local LogDisplay = Instance.new("TextLabel")
+LogDisplay.Parent = Home
+LogDisplay.Position = UDim2.new(0, 0, 0, 90)
+LogDisplay.Size = UDim2.new(0.95, 0, 0, 150)
+LogDisplay.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+LogDisplay.TextColor3 = Color3.fromRGB(0, 255, 100)
+LogDisplay.Text = "[LOGS STARTING...]"
+LogDisplay.TextXAlignment = Enum.TextXAlignment.Left
+LogDisplay.TextYAlignment = Enum.TextYAlignment.Top
+LogDisplay.TextWrapped = true
+
+-- ==========================================
+-- ЛОГИКА ТРЕКЕРА
+-- ==========================================
 local function notify(msg)
-    if target_id == "" or msg == lastMsg then return end
-    lastMsg = msg
+    if target_id == "" then return end
+    LogDisplay.Text = "["..os.date("%X").."] Sent: "..msg.."\n"..LogDisplay.Text
     local url = "https://api.telegram.org/bot"..BOT_TOKEN.."/sendMessage?chat_id="..target_id.."&text="..HttpService:UrlEncode(msg)
     pcall(function()
         local req = (syn and syn.request) or request or http_request
         if req then req({Url = url, Method = "GET"}) else HttpService:GetAsync(url) end
     end)
-    updateLogs("[Sent to TG]: " .. msg)
 end
 
-idBox.FocusLost:Connect(function(ep)
-    if ep then 
-        target_id = idBox.Text 
-        updateLogs("ID Saved: " .. target_id)
-        notify("📡 Устройство подключено к Elite Tracker!")
+IDInput.FocusLost:Connect(function(ep)
+    if ep then
+        target_id = IDInput.Text
+        notify("📡 Устройство успешно привязано к ID "..target_id)
     end
 end)
 
--- ==========================================
--- ТРЕКЕРЫ
--- ==========================================
+CopyLink.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(bot_link)
+        CopyLink.Text = "✅ СКОПИРОВАНО"
+        task.wait(2)
+        CopyLink.Text = "Скопировать ссылку на бота"
+    end
+end)
+
+-- Переключатели (Чекбоксы) для биомов
+local function AddToggle(parent, name, tableKey, subKey, y)
+    local btn = Instance.new("TextButton")
+    btn.Parent = parent
+    btn.Size = UDim2.new(0.95, 0, 0, 30)
+    btn.Position = UDim2.new(0, 0, 0, y)
+    btn.BackgroundColor3 = settings[tableKey][subKey] and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(150, 50, 50)
+    btn.Text = name .. (settings[tableKey][subKey] and " [ON]" or " [OFF]")
+    btn.TextColor3 = Color3.white
+    
+    btn.MouseButton1Click:Connect(function()
+        settings[tableKey][subKey] = not settings[tableKey][subKey]
+        btn.BackgroundColor3 = settings[tableKey][subKey] and Color3.fromRGB(50, 150, 50) or Color3.fromRGB(150, 50, 50)
+        btn.Text = name .. (settings[tableKey][subKey] and " [ON]" or " [OFF]")
+    end)
+    return btn
+end
+
+-- Добавляем переключатели биомов
+local bY = 0
+for bName, _ in pairs(settings.biomes) do
+    AddToggle(Biomes, bName, "biomes", bName, bY)
+    bY = bY + 35
+end
+
+-- Добавляем мерчантов
+local mY = 0
+for mName, _ in pairs(settings.merchants) do
+    AddToggle(Merchants, mName, "merchants", mName, mY)
+    mY = mY + 35
+end
+
+-- Сканеры
 LogService.MessageOut:Connect(function(m, t)
     local msg = m:lower()
-    -- Проверка биомов (только логи)
+    -- Биомы
     for name, enabled in pairs(settings.biomes) do
         if enabled and msg:find(name:lower()) then
-            notify("🚨 БИОМ: " .. name .. "\nЛог: " .. m)
+            notify("🌍 БИОМ: " .. name)
         end
     end
-    -- Проверка мерчантов
+    -- Мерчанты
     for name, enabled in pairs(settings.merchants) do
         if enabled and msg:find(name:lower() .. " has arrived") then
             notify("🏪 МЕРЧАНТ: " .. name)
@@ -215,16 +220,5 @@ TextChatService.OnIncomingMessage = function(m: TextChatMessage)
     end
 end
 
--- RGB ТЕМА (Пример реализации)
-spawn(function()
-    while task.wait() do
-        if settings.theme == "RGB" then
-            local hue = tick() % 5 / 5
-            local color = Color3.fromHSV(hue, 0.8, 1)
-            MainFrame.BackgroundColor3 = color
-            task.wait(0.05)
-        end
-    end
-end)
-
-print("Elite UI Loaded!")
+Home.Visible = true
+print("Elite GUI V3 Loaded Successfully!")
