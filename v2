@@ -7,7 +7,7 @@ local TextChatService = game:GetService("TextChatService")
 -- ==========================================
 local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
 local target_id = ""
-local bot_link = "https://t.me/your_bot_name" 
+local bot_link = "https://t.me/MerchantTraker_Bot" 
 
 local settings = {
     biomes = {WINDY=true, SNOWY=true, RAINY=true, SANDSTORM=true, HELL=true, STARFALL=true, HEAVEN=true, CORRUPTION=true, NULL=true, GLITCH=true, DREAMSPACE=true, CYBERSPACE=true},
@@ -48,7 +48,7 @@ Logo.Parent = Sidebar
 Logo.BackgroundTransparency = 1
 Logo.Position = UDim2.new(0, 15, 0, 10)
 Logo.Size = UDim2.new(0, 100, 0, 100)
-Logo.Image = "rbxassetid://1000002157" -- Твоё лого
+Logo.Image = "rbxassetid://107735786630825" -- Твоё лого
 
 -- Контейнер для кнопок меню
 local TabButtons = Instance.new("Frame")
