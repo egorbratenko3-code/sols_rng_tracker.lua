@@ -8,7 +8,7 @@ local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
 local target_id = ""
 
 local biomes = {"WINDY", "SNOWY", "RAINY", "SANDSTORM", "HELL", "STARFALL", "HEAVEN", "CORRUPTION", "NULL", "GLITCH", "DREAMSPACE", "CYBERSPACE"}
-local merchants = {"Jester", "Rin", "Mari"}
+local merchants = {"Jester has arrived", "Rin has arrived", "Mari has arrived"}
 local active = {}
 local ui_elements = {Main = nil, Accords = {}, Buttons = {}, Inputs = {}}
 
