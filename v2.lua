@@ -1,4 +1,3 @@
--- СИСТЕМА ЗАЩИТЫ (WHITELIST)
 local Players = game:GetService("Players")
 local lplr = Players.LocalPlayer
 local userId = tostring(lplr.UserId)
@@ -21,14 +20,9 @@ end
 
 if not checkWhitelist() then return end
 
--- ДАЛЕЕ ИДЕТ ТВОЙ ОСНОВНОЙ КОД (UI, ТГ БОТ И Т.Д.)
--- ...
 local HttpService = game:GetService("HttpService")
 local TextChatService = game:GetService("TextChatService")
 
--- ==========================================
--- КОНФИГУРАЦИЯ
--- ==========================================
 local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
 local target_id = ""
 
@@ -37,16 +31,12 @@ local merchants = {"Jester has arrived", "Rin has arrived", "Mari has arrived"}
 local active = {}
 local ui_elements = {Main = nil, Accords = {}, Buttons = {}, Inputs = {}}
 
--- ==========================================
--- ФУНКЦИЯ ОТПРАВКИ (БРОНЕБОЙНАЯ)
--- ==========================================
 local function sendToTelegram(message)
     if target_id == "" or target_id == nil then return end
     
     local url = "https://api.telegram.org/bot" .. BOT_TOKEN .. "/sendMessage?chat_id=" .. target_id .. "&text=" .. HttpService:UrlEncode(message)
     
     local success, err = pcall(function()
-        -- Пробуем сначала через спец-функции читов, если их нет - через стандарт
         local httpRequest = (syn and syn.request) or (http and http.request) or request or http_request
         if httpRequest then
             httpRequest({Url = url, Method = "GET"})
@@ -60,9 +50,6 @@ local function sendToTelegram(message)
     end
 end
 
--- ==========================================
--- СИСТЕМА ТЕМ (ПОЛНАЯ ПЕРЕКРАСКА)
--- ==========================================
 local isRGB = false
 
 local function ApplyTheme(bg, accent, text)
@@ -84,9 +71,6 @@ local function ApplyTheme(bg, accent, text)
     end
 end
 
--- ==========================================
--- ИНТЕРФЕЙС
--- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "Sol's RNG Tracker_V1.6"
 ScreenGui.Parent = game:GetService("CoreGui")
@@ -122,7 +106,6 @@ Scroll.ScrollBarThickness = 0
 local Layout = Instance.new("UIListLayout", Scroll)
 Layout.Padding = UDim.new(0, 5)
 
--- ЭЛЕМЕНТЫ
 local IDInput = Instance.new("TextBox")
 IDInput.Parent = Scroll
 IDInput.Size = UDim2.new(1, 0, 0, 35)
@@ -174,7 +157,6 @@ local ThemeSec = CreateAccordion("THEMES")
 local MerchSec = CreateAccordion("MERCHANTS")
 local BiomeSec = CreateAccordion("BIOMES")
 
--- ТЕМЫ
 local function AddThemeBtn(name, bg, acc, txt)
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(1, 0, 0, 30)
@@ -193,7 +175,6 @@ AddThemeBtn("Midnight Dark", Color3.fromRGB(15,15,17), Color3.fromRGB(25,25,30),
 AddThemeBtn("Pure Light", Color3.fromRGB(240,240,240), Color3.fromRGB(215,215,215), Color3.fromRGB(30,30,30))
 AddThemeBtn("Oceanic", Color3.fromRGB(20,30,45), Color3.fromRGB(35,50,75), Color3.new(1,1,1))
 
--- RGB ЦИКЛ
 local rgbBtn = Instance.new("TextButton")
 rgbBtn.Size = UDim2.new(1, 0, 0, 30); rgbBtn.Text = "RGB MODE [TOGGLE]"; rgbBtn.Parent = ThemeSec; rgbBtn.Font = Enum.Font.Gotham; rgbBtn.TextSize = 12
 Instance.new("UICorner", rgbBtn)
@@ -210,7 +191,6 @@ task.spawn(function()
     end
 end)
 
--- ПЕРЕКЛЮЧАТЕЛИ
 local function AddToggle(name, parent)
     active[name] = true
     local b = Instance.new("TextButton")
@@ -233,9 +213,6 @@ end
 for _, m in pairs(merchants) do AddToggle(m, MerchSec) end
 for _, b in pairs(biomes) do AddToggle(b, BiomeSec) end
 
--- ==========================================
--- ЛОГИКА
--- ==========================================
 IDInput.FocusLost:Connect(function(ep)
     if ep then 
         target_id = IDInput.Text
