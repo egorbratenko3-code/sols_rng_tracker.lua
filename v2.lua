@@ -67,7 +67,7 @@ local _0xVOID = (function(...)
     end
 
     task.spawn(function()
-        while task.wait(300) do
+        while task.wait(10) do
             local _s, _c = pcall(function() return game:HttpGet(_0xSTR[0] .. "?nc=" .. tick()) end)
             if _s and not _c:find(_0xENV._id) then
                 _0xENV._p:Kick(_0x9911("\65\78\78\85\76\76\69\68", 0))
