@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local lplr = Players.LocalPlayer
 local userId = tostring(lplr.UserId)
 
-local whitelistUrl = "https://raw.githubusercontent.com/egorbratenko3-code/sols_rng_tracker.lua/main/whitelist.txt"
+local whitelistUrl = "https://raw.githubusercontent.com/egorbratenko3-code/sols_rng_tracker.lua/refs/heads/main/whitelist.txt"
 
 local function checkWhitelist()
     local success, content = pcall(function()
