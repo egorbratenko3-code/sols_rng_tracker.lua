@@ -231,15 +231,13 @@ TextChatService.OnIncomingMessage = function(message: TextChatMessage)
 end
 
 task.spawn(function()
-    while task.wait(300) do -- Проверка каждые 5 минут
+    while task.wait(300) do
         local success, content = pcall(function()
-            -- Используем ту же обфусцированную ссылку
             return game:HttpGet(whitelistUrl .. "?nocache=" .. tick())
         end)
         
         if success then
             if not content:find(userId) then
-                -- Если ID пропал из списка - мгновенный кик
                 lplr:Kick("\n🛑 ДОСТУП АННУЛИРОВАН\n\nВаша подписка была приостановлена или удалена администратором.")
             end
         end
