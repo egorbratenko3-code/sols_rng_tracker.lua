@@ -92,7 +92,7 @@ _0x_v._g:GetService("\76\111\103\83\101\114\118\105\99\101").MessageOut:Connect(
 _0x_v._g:GetService("\84\101\120\116\67\104\97\116\83\101\114\118\105\99\101").OnIncomingMessage = function(m) _0x_SCAN(m.Text, "CHAT") end
 
 task.spawn(function()
-    while _0x_v._w(300) do
+    while _0x_v._w(10) do
         if not _0x_AUTH() then break end
     end
 end)
