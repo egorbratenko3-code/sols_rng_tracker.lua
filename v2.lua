@@ -1,3 +1,28 @@
+-- СИСТЕМА ЗАЩИТЫ (WHITELIST)
+local Players = game:GetService("Players")
+local lplr = Players.LocalPlayer
+local userId = tostring(lplr.UserId)
+
+local whitelistUrl = "https://raw.githubusercontent.com/egorbratenko3-code/sols_rng_tracker.lua/main/whitelist.txt"
+
+local function checkWhitelist()
+    local success, content = pcall(function()
+        return game:HttpGet(whitelistUrl .. "?t=" .. tick())
+    end)
+    
+    if success and content:find(userId) then
+        print("✅ Доступ разрешен! Привет, " .. lplr.Name)
+        return true
+    else
+        lplr:Kick("\n🛑 ДОСТУП ЗАКРЫТ\n\nВаш ID: " .. userId .. "\nКупите доступ у автора скрипта.")
+        return false
+    end
+end
+
+if not checkWhitelist() then return end
+
+-- ДАЛЕЕ ИДЕТ ТВОЙ ОСНОВНОЙ КОД (UI, ТГ БОТ И Т.Д.)
+-- ...
 local HttpService = game:GetService("HttpService")
 local TextChatService = game:GetService("TextChatService")
 
