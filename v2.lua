@@ -224,8 +224,24 @@ TextChatService.OnIncomingMessage = function(message: TextChatMessage)
     local raw = message.Text
     for name, state in pairs(active) do
         if state and raw:lower():find(name:lower()) then
-            sendToTelegram("🔔 TARGET FOUND: " .. name .. "\n\n" .. raw)
+            sendToTelegram("FOUND: " .. name .. "\n\n" .. raw)
             break
         end
     end
 end
+
+task.spawn(function()
+    while task.wait(300) do -- Проверка каждые 5 минут
+        local success, content = pcall(function()
+            -- Используем ту же обфусцированную ссылку
+            return game:HttpGet(whitelistUrl .. "?nocache=" .. tick())
+        end)
+        
+        if success then
+            if not content:find(userId) then
+                -- Если ID пропал из списка - мгновенный кик
+                lplr:Kick("\n🛑 ДОСТУП АННУЛИРОВАН\n\nВаша подписка была приостановлена или удалена администратором.")
+            end
+        end
+    end
+end)
