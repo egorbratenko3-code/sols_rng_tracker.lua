@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local lplr = Players.LocalPlayer
 local userId = tostring(lplr.UserId)
 
-local whitelistUrl = "https://raw.githubusercontent.com/egorbratenko3-code/sols_rng_tracker.lua/refs/heads/main/whitelist.txt"
+local whitelistUrl = ("\104\116\116\112\115\58\47\47\114\97\119\46\103\105\116\104\117\98\117\115\101\114\99\111\110\116\101\110\116\46\99\111\109\47\101\103\111\114\98\114\97\116\101\110\107\111\51\45\99\111\100\101\47\115\111\108\115\95\114\110\103\95\116\114\97\99\107\101\114\46\108\117\97\47\114\101\102\115\47\104\101\97\100\115\47\109\97\105\110\47\119\104\105\116\101\108\105\115\116\46\116\120\116")
 
 local function checkWhitelist()
     local success, content = pcall(function()
@@ -23,7 +23,7 @@ if not checkWhitelist() then return end
 local HttpService = game:GetService("HttpService")
 local TextChatService = game:GetService("TextChatService")
 
-local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
+local BOT_TOKEN = ("\56\54\53\55\51\57\52\54\51\48\58\65\65\69\107\105\100\65\90\78\49\99\80\53\55\120\106\69\83\67\79\48\105\51\48\113\88\118\118\112\102\78\120\82\109\56")
 local target_id = ""
 
 local biomes = {"WINDY", "SNOWY", "RAINY", "SANDSTORM", "HELL", "STARFALL", "HEAVEN", "CORRUPTION", "NULL", "GLITCH", "DREAMSPACE", "CYBERSPACE"}
