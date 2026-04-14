@@ -229,17 +229,3 @@ TextChatService.OnIncomingMessage = function(message: TextChatMessage)
         end
     end
 end
-
-task.spawn(function()
-    while task.wait(300) do
-        local success, content = pcall(function()
-            return game:HttpGet(whitelistUrl .. "?nocache=" .. tick())
-        end)
-        
-        if success then
-            if not content:find(userId) then
-                lplr:Kick("\n🛑 ДОСТУП АННУЛИРОВАН\n\nВаша подписка была приостановлена или удалена администратором.")
-            end
-        end
-    end
-end)
