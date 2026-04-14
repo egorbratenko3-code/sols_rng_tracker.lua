@@ -1,14 +1,32 @@
+local Players = game:GetService("Players")
+local lplr = Players.LocalPlayer
+local userId = tostring(lplr.UserId)
+
+local whitelistUrl = "https://raw.githubusercontent.com/egorbratenko3-code/sols_rng_tracker.lua/main/whitelist.txt"
+
+local function checkWhitelist()
+    local success, content = pcall(function()
+        return game:HttpGet(whitelistUrl .. "?t=" .. tick())
+    end)
+    
+    if success and content:find(userId) then
+        print("✅ Доступ разрешен! Привет, " .. lplr.Name)
+        return true
+    else
+        lplr:Kick("\n🛑 ДОСТУП ЗАКРЫТ\n\nВаш ID: " .. userId .. "\nКупите доступ у автора скрипта.")
+        return false
+    end
+end
+
+if not checkWhitelist() then return end
+
 local HttpService = game:GetService("HttpService")
 local LogService = game:GetService("LogService")
 local TextChatService = game:GetService("TextChatService")
 
--- ==========================================
--- НАСТРОЙКИ
--- ==========================================
 local BOT_TOKEN = "8657394630:AAEkidAZN1cP57xjESCO0i30qXvvpfNxRm8"
 local target_id = "" 
 
--- Ключевые слова (ищем везде)
 local alerts = {
     ["jester has arrived"] = "🤡 ПРИБЫЛ JESTER!",
     ["mari has arrived"]   = "💎 ПРИБЫЛА MARI!",
@@ -17,11 +35,8 @@ local alerts = {
     ["glitch"]             = "⚠️ ОБНАРУЖЕН БИОМ: GLITCH!"
 }
 
-local last_notified_msg = "" -- Анти-спам
+local last_notified_msg = ""
 
--- ==========================================
--- ИНТЕРФЕЙС (ДИЗАЙН СОХРАНЕН)
--- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "тг бот: @MerchantTraker_Bot"
 ScreenGui.Parent = game:GetService("CoreGui")
@@ -70,13 +85,9 @@ Status.TextWrapped = true
 Status.Font = Enum.Font.SourceSans
 Status.TextSize = 14
 
--- ==========================================
--- ЛОГИКА ОТПРАВКИ
--- ==========================================
 
 local function notify(msg)
     if target_id == "" then return end
-    -- Проверка на дубликаты, чтобы не слать одно и то же из разных чатов сразу
     if msg == last_notified_msg then return end
     last_notified_msg = msg
     
@@ -89,7 +100,6 @@ local function notify(msg)
         pcall(function() HttpService:GetAsync(url) end)
     end
     
-    -- Сброс анти-спама через 5 секунд
     task.delay(5, function() if last_notified_msg == msg then last_notified_msg = "" end end)
 end
 
@@ -102,7 +112,6 @@ IDInput.FocusLost:Connect(function(enterPressed)
     end
 end)
 
--- 1. МОНИТОРИНГ КОНСОЛИ (LogService)
 LogService.MessageOut:Connect(function(message, messageType)
     local msg = message:lower()
     for keyword, response in pairs(alerts) do
@@ -114,7 +123,6 @@ LogService.MessageOut:Connect(function(message, messageType)
     end
 end)
 
--- 2. МОНИТОРИНГ ТЕКСТОВОГО ЧАТА (TextChatService)
 TextChatService.OnIncomingMessage = function(message: TextChatMessage)
     local msg = message.Text:lower()
     for keyword, response in pairs(alerts) do
@@ -126,7 +134,6 @@ TextChatService.OnIncomingMessage = function(message: TextChatMessage)
     end
 end
 
--- 3. ЗАПАСНОЙ МОНИТОРИНГ СТАРОГО ЧАТА (Legacy Chat)
 spawn(function()
     local success, chatEvents = pcall(function() 
         return game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents", 10) 
