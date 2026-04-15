@@ -20,7 +20,6 @@ end
 
 if not checkWhitelist() then return end
 
-
 local HttpService = game:GetService("HttpService")
 local TextChatService = game:GetService("TextChatService")
 
