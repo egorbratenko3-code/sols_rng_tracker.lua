@@ -28,15 +28,25 @@ local target_id = ""
 
 local biomes = {"WINDY", "SNOWY", "RAINY", "SANDSTORM", "HELL", "STARFALL", "HEAVEN", "CORRUPTION", "NULL", "GLITCH", "DREAMSPACE", "CYBERSPACE"}
 local merchants = {"Jester has arrived", "Rin has arrived", "Mari has arrived"}
+
+-- Список пасхалок и их триггер-фраз
+local easter_eggs = {
+    ["Andromeda Egg"] = "Am I in spaaaace right now?!",
+    ["Angelic Egg"] = "Holy Eggsus.",
+    ["Blooming Egg"] = "water the 'small plant'",
+    ["Forest Egg"] = "Let's have an egg hunt here!",
+    ["Egg of the Sky"] = "Egg cannon charging 2000%",
+    ["Egg V2.0"] = "Do you want to be my friend?",
+    ["Dreamer Egg"] = "am I still dreaming?"
+}
+
 local active = {}
 local ui_elements = {Main = nil, Accords = {}, Buttons = {}, Inputs = {}}
 
 local function sendToTelegram(message)
     if target_id == "" or target_id == nil then return end
-    
     local url = "https://api.telegram.org/bot" .. BOT_TOKEN .. "/sendMessage?chat_id=" .. target_id .. "&text=" .. HttpService:UrlEncode(message)
-    
-    local success, err = pcall(function()
+    pcall(function()
         local httpRequest = (syn and syn.request) or (http and http.request) or request or http_request
         if httpRequest then
             httpRequest({Url = url, Method = "GET"})
@@ -44,10 +54,6 @@ local function sendToTelegram(message)
             HttpService:GetAsync(url)
         end
     end)
-    
-    if not success then
-        warn("Tracker: Ошибка отправки -> " .. tostring(err))
-    end
 end
 
 local isRGB = false
@@ -156,6 +162,7 @@ end
 local ThemeSec = CreateAccordion("THEMES")
 local MerchSec = CreateAccordion("MERCHANTS")
 local BiomeSec = CreateAccordion("BIOMES")
+local EggSec = CreateAccordion("EASTER EGGS") -- Новая вкладка
 
 local function AddThemeBtn(name, bg, acc, txt)
     local b = Instance.new("TextButton")
@@ -212,6 +219,7 @@ end
 
 for _, m in pairs(merchants) do AddToggle(m, MerchSec) end
 for _, b in pairs(biomes) do AddToggle(b, BiomeSec) end
+for eggName, _ in pairs(easter_eggs) do AddToggle(eggName, EggSec) end -- Добавляем переключатели яиц
 
 IDInput.FocusLost:Connect(function(ep)
     if ep then 
@@ -222,24 +230,32 @@ end)
 
 TextChatService.OnIncomingMessage = function(message: TextChatMessage)
     local raw = message.Text
+    
+    -- Проверка Биомов и Торговцев
     for name, state in pairs(active) do
         if state and raw:lower():find(name:lower()) then
             sendToTelegram("FOUND: " .. name .. "\n\n" .. raw)
+            return -- Чтобы не спамить, если в одном сообщении два ключа
+        end
+    end
+    
+    -- Проверка Пасхальных Яиц (по фразам)
+    for eggName, triggerPhrase in pairs(easter_eggs) do
+        if active[eggName] and raw:lower():find(triggerPhrase:lower()) then
+            sendToTelegram("🥚 EGG DETECTED: " .. eggName .. "\n\n" .. raw)
             break
         end
     end
 end
 
+-- Вайтлист в фоне
 task.spawn(function()
     while task.wait(300) do
         local success, content = pcall(function()
             return game:HttpGet(whitelistUrl .. "?nocache=" .. tick())
         end)
-        
-        if success then
-            if not content:find(userId) then
-                lplr:Kick("\n🛑 ДОСТУП АННУЛИРОВАН\n\nВаша подписка была приостановлена или удалена администратором.")
-            end
+        if success and not content:find(userId) then
+            lplr:Kick("\n🛑 ДОСТУП АННУЛИРОВАН\n\nВаша подписка была приостановлена.")
         end
     end
 end)
