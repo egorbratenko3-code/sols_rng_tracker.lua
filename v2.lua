@@ -29,7 +29,6 @@ local target_id = ""
 local biomes = {"WINDY", "SNOWY", "RAINY", "SANDSTORM", "HELL", "STARFALL", "HEAVEN", "CORRUPTION", "NULL", "GLITCH", "DREAMSPACE", "CYBERSPACE"}
 local merchants = {"Jester has arrived", "Rin has arrived", "Mari has arrived"}
 
--- Список пасхалок и их триггер-фраз
 local easter_eggs = {
     ["Andromeda Egg"] = "Am I in spaaaace right now?!",
     ["Angelic Egg"] = "Holy Eggsus.",
