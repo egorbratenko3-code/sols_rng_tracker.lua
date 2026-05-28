@@ -33,7 +33,7 @@ local alerts = {
     ["dreamspace"]         = "🌌 ОБНАРУЖЕН БИОМ: DREAMSPACE!",
     ["cyberspace"]         = "💾 ОБНАРУЖЕН БИОМ: CYBERSPACE!",
     ["glitch"]             = "⚠️ ОБНАРУЖЕН БИОМ: GLITCH!",
-    [singularity]          = "🎇 ОБНАРУЖЕН БИОМ: singularity"
+    ["singularity"]          = "🎇 ОБНАРУЖЕН БИОМ: singularity"
 }
 
 local last_notified_msg = ""
