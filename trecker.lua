@@ -32,7 +32,8 @@ local alerts = {
     ["mari has arrived"]   = "💎 ПРИБЫЛА MARI!",
     ["dreamspace"]         = "🌌 ОБНАРУЖЕН БИОМ: DREAMSPACE!",
     ["cyberspace"]         = "💾 ОБНАРУЖЕН БИОМ: CYBERSPACE!",
-    ["glitch"]             = "⚠️ ОБНАРУЖЕН БИОМ: GLITCH!"
+    ["glitch"]             = "⚠️ ОБНАРУЖЕН БИОМ: GLITCH!",
+    [singularity]          = "🎇 ОБНАРУЖЕН БИОМ: singularity"
 }
 
 local last_notified_msg = ""
