@@ -28,8 +28,6 @@ local BOT_TOKEN = ("\56\54\53\55\51\57\52\54\51\48\58\65\65\69\107\105\100\65\90
 local target_id = "" 
 
 local alerts = {
-    ["jester has arrived"] = "🤡 ПРИБЫЛ JESTER!",
-    ["mari has arrived"]   = "💎 ПРИБЫЛА MARI!",
     ["dreamspace"]         = "🌌 ОБНАРУЖЕН БИОМ: DREAMSPACE!",
     ["cyberspace"]         = "💾 ОБНАРУЖЕН БИОМ: CYBERSPACE!",
     ["glitch"]             = "⚠️ ОБНАРУЖЕН БИОМ: GLITCH!",
